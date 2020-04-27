@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  NavTestView.swift
 //  TestyTest
 //
 //  Created by Gabriel Perdue on 2/21/20.
@@ -8,15 +8,14 @@
 
 import SwiftUI
 
-
-struct ContentView: View {
+struct NavTestView: View {
   var body: some View {
-    Text("Mellow")
+    Text("I am a view into a view...")
   }
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct NavTestView_Previews: PreviewProvider {
   static var previews: some View {
-    ContentView()
+    NavTestView()
   }
 }

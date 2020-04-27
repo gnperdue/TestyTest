@@ -20,7 +20,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
     // Create the SwiftUI view that provides the window contents.
-    let contentView = ContentView()
+//    let contentView = NavTestMaster()
+//    let contentView = StateTestTopView()
+//    let contentView = StateTest2View()
+
+    // calling .environmentObject here will pass the environment down through
+    // all the children as long as they declare an `@EnvironmentObject` for
+    // gameData, etc.
+    let gd = GameData(maxValue: 10, player: "Player 1")
+    let ps = ProblemSpace(gameData: gd)
+    let sm = StatsManager(gameData: gd)
+    let contentView = CombineTestView(problemSpace: ps, statsManager: sm)
+      .environmentObject(gd)
+
+//    let contentView = DiscoManager()
 
     // Use a UIHostingController as window root view controller.
     if let windowScene = scene as? UIWindowScene {
