@@ -33,8 +33,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let contentView = CombineTestView(problemSpace: ps, statsManager: sm)
       .environmentObject(gd)
 
-//    let contentView = DiscoManager()
-
     // Use a UIHostingController as window root view controller.
     if let windowScene = scene as? UIWindowScene {
         let window = UIWindow(windowScene: windowScene)
