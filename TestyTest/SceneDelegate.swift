@@ -21,8 +21,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     // Create the SwiftUI view that provides the window contents.
 //    let contentView = NavTestMaster()
-//    let contentView = StateTestTopView()
-//    let contentView = StateTest2View()
 
     // calling .environmentObject here will pass the environment down through
     // all the children as long as they declare an `@EnvironmentObject` for
