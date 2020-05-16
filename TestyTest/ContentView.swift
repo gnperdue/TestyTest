@@ -29,13 +29,15 @@ struct CountDownIntervalView: View {
   var interval: TimeInterval {
     return length - currentDate.timeIntervalSince(startingTime)
   }
+  @State var color: Int = 0
+  let colors: [Color] = [.black, .red]
+
 
   func format(duration: TimeInterval) -> String {
     let formatter = DateComponentsFormatter()
     formatter.allowedUnits = [.minute, .second]
     formatter.unitsStyle = .positional
     formatter.maximumUnitCount = 2
-
     return formatter.string(from: duration)!
   }
 
@@ -45,11 +47,14 @@ struct CountDownIntervalView: View {
         .padding()
       Text("\(format(duration: interval))").onReceive(timer) { input in
         self.currentDate = input
+        if self.interval <= 30 {
+          self.color = (self.color + 1) % self.colors.count
+        }
         if self.interval <= 0 {
           self.mode.wrappedValue.dismiss()
         }
       }
-      .foregroundColor(self.interval > 10 ? Color.black : Color.red)
+      .foregroundColor(colors[color])
       .padding()
       Button(action: {
         self.mode.wrappedValue.dismiss()
@@ -60,8 +65,6 @@ struct CountDownIntervalView: View {
     }
     .navigationBarBackButtonHidden(true)
   }
-
-
 }
 
 struct TimerIntervalView: View {
