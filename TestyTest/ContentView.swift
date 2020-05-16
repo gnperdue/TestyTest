@@ -11,12 +11,18 @@ import SwiftUI
 
 struct ContentView: View {
   var body: some View {
-    CountDownIntervalView()
+    NavigationView { // We have a Nav view up the hierarchy...
+      NavigationLink(destination: CountDownIntervalView()) {
+        Text("Start the countdown!")
+      }
+    }
+    .navigationViewStyle(StackNavigationViewStyle())
   }
 }
 
 struct CountDownIntervalView: View {
-  let length: TimeInterval = 120
+  @Environment(\.presentationMode) var mode: Binding<PresentationMode>
+  let length: TimeInterval = 12
   let startingTime = Date()
   @State var currentDate = Date()
   let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -36,12 +42,23 @@ struct CountDownIntervalView: View {
   var body: some View {
     VStack {
       Text("Time remaining:")
-      if self.interval > 0 {
-        Text("\(format(duration: interval))").onReceive(timer) { input in
-          self.currentDate = input
+        .padding()
+      Text("\(format(duration: interval))").onReceive(timer) { input in
+        self.currentDate = input
+        if self.interval <= 0 {
+          self.mode.wrappedValue.dismiss()
         }
       }
+      .foregroundColor(self.interval > 10 ? Color.black : Color.red)
+      .padding()
+      Button(action: {
+        self.mode.wrappedValue.dismiss()
+      }) {
+        Text("Quit early!")
+      }
+      .padding()
     }
+    .navigationBarBackButtonHidden(true)
   }
 
 
