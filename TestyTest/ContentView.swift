@@ -10,22 +10,32 @@ import SwiftUI
 
 
 struct ContentView: View {
-  let xs: [CGFloat] = [1.0, 2.0, 3.0]
-  let ys: [CGFloat] = [1.0, 2.0, 3.0]
+  let keys = ExampleGameData().scoreDict.keys.sorted()
+  let scoreDict = ExampleGameData().scoreDict
+  let highScore = ExampleGameData().highScore
   
   var body: some View {
+    
     GeometryReader { reader in
-      ForEach(0..<3) { idx in
+      
+      ForEach(self.keys.indices) { idx in
         Path { p in
-          let xScaleFactor = reader.size.width / 10.0
-          let yScaleFactor = reader.size.height / 10.0
-          p.move(to: CGPoint(x: self.xs[idx] * xScaleFactor,
-                             y: self.ys[idx] * yScaleFactor))
-          p.addLine(to: CGPoint(x: (self.xs[idx] + 0.5) * xScaleFactor,
-                                y: self.ys[idx] * yScaleFactor))
+          let xScaleFactor = reader.size.width / CGFloat(self.keys.count + 1)
+          let yScaleFactor = reader.size.height / CGFloat(self.highScore * 1.1)
+          let startPoint = CGPoint(
+            x: CGFloat(idx + 1) * xScaleFactor,
+            y: reader.size.height -
+              CGFloat(self.scoreDict[self.keys[idx]]!) * yScaleFactor)
+          let endPoint = CGPoint(
+            x: (CGFloat(idx + 1) + 0.5) * xScaleFactor,
+            y: reader.size.height -
+              CGFloat(self.scoreDict[self.keys[idx]]!) * yScaleFactor)
+          p.move(to: startPoint)
+          p.addLine(to: endPoint)
         }
         .stroke()
       }
+      
     }
   }
 }
