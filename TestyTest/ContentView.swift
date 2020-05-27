@@ -18,7 +18,7 @@ struct ContentView: View {
     
     GeometryReader { reader in
       
-      ForEach(self.keys.indices) { idx in
+      ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
         Path { p in
           let xScaleFactor = reader.size.width / CGFloat(self.keys.count + 1)
           let yScaleFactor = reader.size.height / CGFloat(self.highScore * 1.1)
@@ -27,15 +27,15 @@ struct ContentView: View {
             y: reader.size.height -
               CGFloat(self.scoreDict[self.keys[idx]]!) * yScaleFactor)
           let endPoint = CGPoint(
-            x: (CGFloat(idx + 1) + 0.5) * xScaleFactor,
+            x: CGFloat(idx + 2) * xScaleFactor,
             y: reader.size.height -
-              CGFloat(self.scoreDict[self.keys[idx]]!) * yScaleFactor)
+              CGFloat(self.scoreDict[self.keys[idx + 1]]!) * yScaleFactor)
           p.move(to: startPoint)
           p.addLine(to: endPoint)
         }
         .stroke()
       }
-      
+
     }
   }
 }
