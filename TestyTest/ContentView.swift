@@ -13,6 +13,7 @@ struct ContentView: View {
   let keys = ExampleGameData().scoreDict.keys.sorted()
   let scoreDict = ExampleGameData().scoreDict
   let highScore = 50
+  let nYTicks = 10
 
   // how much horizontal space does each "day" in the set of scores take?
   // TODO -- adjust to actual date span instead of just list of days
@@ -98,9 +99,23 @@ struct ContentView: View {
       .stroke(Color.gray, lineWidth: 0.5)
 
       // Draw y-axis tick marks
-//      ForEach(0..<10) { tick in
-//        let yOffset = reader.size.height ... blah blah scaling, etc.
-//      }
+      ForEach(0..<self.nYTicks) { tick in
+        Path { p in
+          let verticalSpan = reader.size.height - self.verticalPadding
+          let tickStep = verticalSpan / CGFloat(self.nYTicks)
+          let yPos = reader.size.height - self.verticalPadding / 2.0 -
+            CGFloat(tick) * tickStep
+          let tickStart = CGPoint(
+            x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
+            y: yPos)
+          let tickStop = CGPoint(
+            x: self.horizontalPadding / 2.0,
+            y: yPos)
+          p.move(to: tickStart)
+          p.addLine(to: tickStop)
+        }
+        .stroke(Color.black, lineWidth: 5.0)
+      }
       
       // Draw x-axis tick marks
       
