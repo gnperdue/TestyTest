@@ -20,7 +20,7 @@ struct ContentView: View {
     width / CGFloat(count)
   }
 
-  // how much vertical space does each score take?
+  // how much of the open vertical space does each score take?
   func scoreHeight(_ height: CGFloat, range: Int) -> CGFloat {
     height / CGFloat(range)
   }
@@ -38,27 +38,92 @@ struct ContentView: View {
       Double(line * 10),
       scoreHeight: self.scoreHeight(height, range: self.highScore))
   }
-  
+
+  // TODO - how to make these a fraction of the screen size?
+  // total vertical padding (bottom + top)
+  let verticalPadding: CGFloat = 80.0
+  // total horizontal padding (leading + trailing)
+  let horizontalPadding: CGFloat = 80.0
+
   var body: some View {
     
     GeometryReader { reader in
+      
+      // x-axis, top bar
+      Path { p in
+        let bottomLeadingCorner = CGPoint(
+          x: self.horizontalPadding / 2.0,
+          y: reader.size.height - self.verticalPadding / 2.0)
+        let bottomTrailingCorner = CGPoint(
+          x: reader.size.width - self.horizontalPadding / 2.0,
+          y: reader.size.height - self.verticalPadding / 2.0)
+        p.move(to: bottomLeadingCorner)
+        p.addLine(to: bottomTrailingCorner)
+      }
+      .stroke(Color.black, lineWidth: 5.0)
+      Path { p in
+        let topLeadingCorner = CGPoint(
+          x: self.horizontalPadding / 2.0,
+          y: self.verticalPadding / 2.0)
+        let topTrailingCorner = CGPoint(
+          x: reader.size.width - self.horizontalPadding / 2.0,
+          y: self.verticalPadding / 2.0)
+        p.move(to: topLeadingCorner)
+        p.addLine(to: topTrailingCorner)
+      }
+      .stroke(Color.gray, lineWidth: 0.5)
 
+      // y-axis, trailing bar
+      Path { p in
+        let bottomLeadingCorner = CGPoint(
+          x: self.horizontalPadding / 2.0,
+          y: reader.size.height - self.verticalPadding / 2.0)
+        let topLeadingCorner = CGPoint(
+          x: self.horizontalPadding / 2.0,
+          y: self.verticalPadding / 2.0)
+        p.move(to: bottomLeadingCorner)
+        p.addLine(to: topLeadingCorner)
+      }
+      .stroke(Color.black, lineWidth: 5.0)
+      Path { p in
+        let bottomTrailingCorner = CGPoint(
+          x: reader.size.width - self.horizontalPadding / 2.0,
+          y: reader.size.height - self.verticalPadding / 2.0)
+        let topTrailingCorner = CGPoint(
+          x: reader.size.width - self.horizontalPadding / 2.0,
+          y: self.verticalPadding / 2.0)
+        p.move(to: bottomTrailingCorner)
+        p.addLine(to: topTrailingCorner)
+      }
+      .stroke(Color.gray, lineWidth: 0.5)
+
+      // Draw y-axis tick marks
+//      ForEach(0..<10) { tick in
+//        let yOffset = reader.size.height ... blah blah scaling, etc.
+//      }
+      
+      // Draw x-axis tick marks
+      
+      // Draw the scores
       ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
         Path { p in
-          let dWidth = self.dayWidth(reader.size.width,
-                                     count: self.keys.count + 1)
-          let sHeight = self.scoreHeight(reader.size.height,
-                                         range: self.highScore)
+          let dWidth = self.dayWidth(
+            reader.size.width - self.horizontalPadding,
+            count: self.keys.count + 1)
+          let sHeight = self.scoreHeight(
+            reader.size.height - self.verticalPadding, range: self.highScore)
           let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
           let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
-          let scoreStart = self.scoreOffset(self.scoreDict[self.keys[idx]]!,
-                                            scoreHeight: sHeight)
-          let scoreStop = self.scoreOffset(self.scoreDict[self.keys[idx + 1]]!,
-                                           scoreHeight: sHeight)
-          let startPoint = CGPoint(x: dStart,
-                                   y: reader.size.height - scoreStart)
-          let endPoint = CGPoint(x: dStop,
-                                 y: reader.size.height - scoreStop)
+          let scoreStart = self.scoreOffset(
+            self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
+          let scoreStop = self.scoreOffset(
+            self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
+          let startPoint = CGPoint(
+            x: dStart,
+            y: reader.size.height - self.verticalPadding / 2.0 - scoreStart)
+          let endPoint = CGPoint(
+            x: dStop,
+            y: reader.size.height - self.verticalPadding / 2.0 - scoreStop)
           p.move(to: startPoint)
           p.addLine(to: endPoint)
         }
