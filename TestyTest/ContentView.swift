@@ -13,6 +13,7 @@ struct ContentView: View {
   let keys = ExampleGameData().scoreDict.keys.sorted()
   let scoreDict = ExampleGameData().scoreDict
   let highScore = 50
+  let maxScoreDigits = 3
   let nYTicks = 10
 
   // how much horizontal space does each "day" in the set of scores take?
@@ -30,16 +31,44 @@ struct ContentView: View {
     CGFloat(day) * dWidth
   }
 
-  func scoreOffset(_ score: Double, scoreHeight: CGFloat) -> CGFloat {
+  func scorePosition(_ score: Double, scoreHeight: CGFloat) -> CGFloat {
     CGFloat(score + 1) * scoreHeight
   }
   
   func scoreLabelOffset(_ line: Int, height: CGFloat) -> CGFloat {
-    height - self.scoreOffset(
+    height - self.scorePosition(
       Double(line * 10),
       scoreHeight: self.scoreHeight(height, range: self.highScore))
   }
 
+  func tickPos(
+    height: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
+  ) -> CGFloat {
+    let verticalSpan = height - padding
+    let tickStep = verticalSpan / CGFloat(nTicks)
+    let yPos = height - padding / 2.0 - CGFloat(tick) * tickStep
+    return yPos
+  }
+  
+  func tickLabelPos(
+      height: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
+    ) -> CGFloat {
+    let verticalSpan = height - padding
+    let tickStep = verticalSpan / CGFloat(nTicks)
+    let yPos = height - padding / 2.0 - CGFloat(tick) * tickStep -
+      tickStep / 3.5
+    return yPos
+  }
+  
+  func tickLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
+    let marker: Double = Double(highScore) -
+      Double(nTicks - tick) * Double(highScore) / Double(nTicks)
+    let label = String(format: "%.0f", marker)
+    // wherefore art thou, o' built-in String padding functions?...
+    return String(
+      repeating: " ", count: self.maxScoreDigits - label.count) + label
+  }
+  
   // TODO - how to make these a fraction of the screen size?
   // total vertical padding (bottom + top)
   let verticalPadding: CGFloat = 80.0
@@ -100,21 +129,29 @@ struct ContentView: View {
 
       // Draw y-axis tick marks
       ForEach(0..<self.nYTicks) { tick in
-        Path { p in
-          let verticalSpan = reader.size.height - self.verticalPadding
-          let tickStep = verticalSpan / CGFloat(self.nYTicks)
-          let yPos = reader.size.height - self.verticalPadding / 2.0 -
-            CGFloat(tick) * tickStep
-          let tickStart = CGPoint(
-            x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
-            y: yPos)
-          let tickStop = CGPoint(
-            x: self.horizontalPadding / 2.0,
-            y: yPos)
-          p.move(to: tickStart)
-          p.addLine(to: tickStop)
+        Group {
+          Path { p in
+            let yPos = self.tickPos(height: reader.size.height,
+                                       padding: self.verticalPadding,
+                                       nTicks: self.nYTicks,
+                                       tick: tick)
+            let tickStart = CGPoint(
+              x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
+              y: yPos)
+            let tickStop = CGPoint(
+              x: self.horizontalPadding / 2.0,
+              y: yPos)
+            p.move(to: tickStart)
+            p.addLine(to: tickStop)
+          }
+          .stroke(Color.black, lineWidth: 5.0)
+          Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
+            .offset(x: self.horizontalPadding / 10.0,
+                    y: self.tickLabelPos(height: reader.size.height,
+                                         padding: self.verticalPadding,
+                                         nTicks: self.nYTicks,
+                                         tick: tick))
         }
-        .stroke(Color.black, lineWidth: 5.0)
       }
       
       // Draw x-axis tick marks
@@ -129,9 +166,9 @@ struct ContentView: View {
             reader.size.height - self.verticalPadding, range: self.highScore)
           let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
           let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
-          let scoreStart = self.scoreOffset(
+          let scoreStart = self.scorePosition(
             self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
-          let scoreStop = self.scoreOffset(
+          let scoreStop = self.scorePosition(
             self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
           let startPoint = CGPoint(
             x: dStart,
