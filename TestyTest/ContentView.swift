@@ -15,7 +15,12 @@ struct ContentView: View {
   let highScore = 50
   let maxScoreDigits = 3
   let nYTicks = 10
+  let nXTicks = 10  // TODO - distribute dates...
 
+  // TODO -- need to think about scaling the x-axis to span the dates in the
+  // set of scores, then marking ticks equally 10 times across that span, then
+  // setting plot points proportionately across that span
+  
   // how much horizontal space does each "day" in the set of scores take?
   // TODO -- adjust to actual date span instead of just list of days
   func dayWidth(_ width: CGFloat, count: Int) -> CGFloat {
@@ -41,23 +46,25 @@ struct ContentView: View {
       scoreHeight: self.scoreHeight(height, range: self.highScore))
   }
 
+  // try to make this work for x and y-axes
   func tickPos(
-    height: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
+    dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
   ) -> CGFloat {
-    let verticalSpan = height - padding
+    let verticalSpan = dimension - padding
     let tickStep = verticalSpan / CGFloat(nTicks)
-    let yPos = height - padding / 2.0 - CGFloat(tick) * tickStep
-    return yPos
+    let pos = dimension - padding / 2.0 - CGFloat(tick) * tickStep
+    return pos
   }
   
+  // try to make this work for x and y-axes
   func tickLabelPos(
-      height: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
+      dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
     ) -> CGFloat {
-    let verticalSpan = height - padding
+    let verticalSpan = dimension - padding
     let tickStep = verticalSpan / CGFloat(nTicks)
-    let yPos = height - padding / 2.0 - CGFloat(tick) * tickStep -
+    let pos = dimension - padding / 2.0 - CGFloat(tick) * tickStep -
       tickStep / 3.5
-    return yPos
+    return pos
   }
   
   func tickLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
@@ -71,7 +78,7 @@ struct ContentView: View {
   
   // TODO - how to make these a fraction of the screen size?
   // total vertical padding (bottom + top)
-  let verticalPadding: CGFloat = 80.0
+  let verticalPadding: CGFloat = 100.0
   // total horizontal padding (leading + trailing)
   let horizontalPadding: CGFloat = 80.0
 
@@ -131,10 +138,10 @@ struct ContentView: View {
       ForEach(0..<self.nYTicks) { tick in
         Group {
           Path { p in
-            let yPos = self.tickPos(height: reader.size.height,
-                                       padding: self.verticalPadding,
-                                       nTicks: self.nYTicks,
-                                       tick: tick)
+            let yPos = self.tickPos(dimension: reader.size.height,
+                                    padding: self.verticalPadding,
+                                    nTicks: self.nYTicks,
+                                    tick: tick)
             let tickStart = CGPoint(
               x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
               y: yPos)
@@ -147,7 +154,7 @@ struct ContentView: View {
           .stroke(Color.black, lineWidth: 5.0)
           Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
             .offset(x: self.horizontalPadding / 10.0,
-                    y: self.tickLabelPos(height: reader.size.height,
+                    y: self.tickLabelPos(dimension: reader.size.height,
                                          padding: self.verticalPadding,
                                          nTicks: self.nYTicks,
                                          tick: tick))
@@ -155,6 +162,26 @@ struct ContentView: View {
       }
       
       // Draw x-axis tick marks
+      ForEach(0..<self.nXTicks) { tick in
+        Group {
+          Path { p in
+            let xPos = self.tickPos(dimension: reader.size.width,
+                                    padding: self.horizontalPadding,
+                                    nTicks: self.nXTicks,
+                                    tick: tick)
+            let tickStart = CGPoint(
+              x: xPos,
+              y: reader.size.height - self.verticalPadding / 2.0 +
+                self.verticalPadding / 4.0)
+            let tickStop = CGPoint(
+              x: xPos,
+              y: reader.size.height - self.verticalPadding / 2.0)
+            p.move(to: tickStart)
+            p.addLine(to: tickStop)
+          }
+          .stroke(Color.black, lineWidth: 5.0)
+        }
+      }
       
       // Draw the scores
       ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
