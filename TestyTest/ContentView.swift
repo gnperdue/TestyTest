@@ -16,7 +16,7 @@ struct ContentView: View {
   let maxScoreDigits = 3
   let nYTicks = 10
   let nXTicks = 10  // TODO - distribute dates...
-
+  
   // TODO -- need to think about scaling the x-axis to span the dates in the
   // set of scores, then marking ticks equally 10 times across that span, then
   // setting plot points proportionately across that span
@@ -26,7 +26,7 @@ struct ContentView: View {
   func dayWidth(_ width: CGFloat, count: Int) -> CGFloat {
     width / CGFloat(count)
   }
-
+  
   // how much of the open vertical space does each score take?
   func scoreHeight(_ height: CGFloat, range: Int) -> CGFloat {
     height / CGFloat(range)
@@ -35,7 +35,7 @@ struct ContentView: View {
   func dayOffset(_ day: Int, dWidth: CGFloat) -> CGFloat {
     CGFloat(day) * dWidth
   }
-
+  
   func scorePosition(_ score: Double, scoreHeight: CGFloat) -> CGFloat {
     CGFloat(score + 1) * scoreHeight
   }
@@ -45,7 +45,7 @@ struct ContentView: View {
       Double(line * 10),
       scoreHeight: self.scoreHeight(height, range: self.highScore))
   }
-
+  
   // try to make this work for x and y-axes
   func tickPos(
     dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
@@ -58,8 +58,8 @@ struct ContentView: View {
   
   // try to make this work for x and y-axes
   func tickLabelPos(
-      dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
-    ) -> CGFloat {
+    dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
+  ) -> CGFloat {
     let verticalSpan = dimension - padding
     let tickStep = verticalSpan / CGFloat(nTicks)
     let pos = dimension - padding / 2.0 - CGFloat(tick) * tickStep -
@@ -81,134 +81,128 @@ struct ContentView: View {
   let verticalPadding: CGFloat = 100.0
   // total horizontal padding (leading + trailing)
   let horizontalPadding: CGFloat = 80.0
-
+  
   var body: some View {
     
-    GeometryReader { reader in
+    GeometryReader<AnyView> { reader in
       
-      // x-axis, top bar
-      Path { p in
-        let bottomLeadingCorner = CGPoint(
-          x: self.horizontalPadding / 2.0,
-          y: reader.size.height - self.verticalPadding / 2.0)
-        let bottomTrailingCorner = CGPoint(
-          x: reader.size.width - self.horizontalPadding / 2.0,
-          y: reader.size.height - self.verticalPadding / 2.0)
-        p.move(to: bottomLeadingCorner)
-        p.addLine(to: bottomTrailingCorner)
-      }
-      .stroke(Color.black, lineWidth: 5.0)
-      Path { p in
-        let topLeadingCorner = CGPoint(
-          x: self.horizontalPadding / 2.0,
-          y: self.verticalPadding / 2.0)
-        let topTrailingCorner = CGPoint(
-          x: reader.size.width - self.horizontalPadding / 2.0,
-          y: self.verticalPadding / 2.0)
-        p.move(to: topLeadingCorner)
-        p.addLine(to: topTrailingCorner)
-      }
-      .stroke(Color.gray, lineWidth: 0.5)
-
-      // y-axis, trailing bar
-      Path { p in
-        let bottomLeadingCorner = CGPoint(
-          x: self.horizontalPadding / 2.0,
-          y: reader.size.height - self.verticalPadding / 2.0)
-        let topLeadingCorner = CGPoint(
-          x: self.horizontalPadding / 2.0,
-          y: self.verticalPadding / 2.0)
-        p.move(to: bottomLeadingCorner)
-        p.addLine(to: topLeadingCorner)
-      }
-      .stroke(Color.black, lineWidth: 5.0)
-      Path { p in
-        let bottomTrailingCorner = CGPoint(
-          x: reader.size.width - self.horizontalPadding / 2.0,
-          y: reader.size.height - self.verticalPadding / 2.0)
-        let topTrailingCorner = CGPoint(
-          x: reader.size.width - self.horizontalPadding / 2.0,
-          y: self.verticalPadding / 2.0)
-        p.move(to: bottomTrailingCorner)
-        p.addLine(to: topTrailingCorner)
-      }
-      .stroke(Color.gray, lineWidth: 0.5)
-
-      // Draw y-axis tick marks
-      ForEach(0..<self.nYTicks) { tick in
+      let bottomLeadingCorner = CGPoint(
+        x: self.horizontalPadding / 2.0,
+        y: reader.size.height - self.verticalPadding / 2.0)
+      let bottomTrailingCorner = CGPoint(
+        x: reader.size.width - self.horizontalPadding / 2.0,
+        y: reader.size.height - self.verticalPadding / 2.0)
+      let topLeadingCorner = CGPoint(
+        x: self.horizontalPadding / 2.0,
+        y: self.verticalPadding / 2.0)
+      let topTrailingCorner = CGPoint(
+        x: reader.size.width - self.horizontalPadding / 2.0,
+        y: self.verticalPadding / 2.0)
+      
+      return AnyView(
         Group {
+          // x-axis, bottom bar
           Path { p in
-            let yPos = self.tickPos(dimension: reader.size.height,
-                                    padding: self.verticalPadding,
-                                    nTicks: self.nYTicks,
-                                    tick: tick)
-            let tickStart = CGPoint(
-              x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
-              y: yPos)
-            let tickStop = CGPoint(
-              x: self.horizontalPadding / 2.0,
-              y: yPos)
-            p.move(to: tickStart)
-            p.addLine(to: tickStop)
+            p.move(to: bottomLeadingCorner)
+            p.addLine(to: bottomTrailingCorner)
           }
           .stroke(Color.black, lineWidth: 5.0)
-          Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
-            .offset(x: self.horizontalPadding / 10.0,
-                    y: self.tickLabelPos(dimension: reader.size.height,
-                                         padding: self.verticalPadding,
-                                         nTicks: self.nYTicks,
-                                         tick: tick))
-        }
-      }
-      
-      // Draw x-axis tick marks
-      ForEach(0..<self.nXTicks) { tick in
-        Group {
+          // x-axis, top bar
           Path { p in
-            let xPos = self.tickPos(dimension: reader.size.width,
-                                    padding: self.horizontalPadding,
-                                    nTicks: self.nXTicks,
-                                    tick: tick)
-            let tickStart = CGPoint(
-              x: xPos,
-              y: reader.size.height - self.verticalPadding / 2.0 +
-                self.verticalPadding / 4.0)
-            let tickStop = CGPoint(
-              x: xPos,
-              y: reader.size.height - self.verticalPadding / 2.0)
-            p.move(to: tickStart)
-            p.addLine(to: tickStop)
+            p.move(to: topLeadingCorner)
+            p.addLine(to: topTrailingCorner)
+          }
+          .stroke(Color.gray, lineWidth: 0.5)
+          // y-axis, leading bar
+          Path { p in
+            p.move(to: bottomLeadingCorner)
+            p.addLine(to: topLeadingCorner)
           }
           .stroke(Color.black, lineWidth: 5.0)
+          // y-axis, trailing bar
+          Path { p in
+            p.move(to: bottomTrailingCorner)
+            p.addLine(to: topTrailingCorner)
+          }
+          .stroke(Color.gray, lineWidth: 0.5)
+          
+          // Draw y-axis tick marks
+          ForEach(0..<self.nYTicks) { tick in
+            Group {
+              Path { p in
+                let yPos = self.tickPos(dimension: reader.size.height,
+                                        padding: self.verticalPadding,
+                                        nTicks: self.nYTicks,
+                                        tick: tick)
+                let tickStart = CGPoint(
+                  x: self.horizontalPadding / 2.0 - self.horizontalPadding / 4.0,
+                  y: yPos)
+                let tickStop = CGPoint(
+                  x: self.horizontalPadding / 2.0,
+                  y: yPos)
+                p.move(to: tickStart)
+                p.addLine(to: tickStop)
+              }
+              .stroke(Color.black, lineWidth: 5.0)
+              Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
+                .offset(x: self.horizontalPadding / 10.0,
+                        y: self.tickLabelPos(dimension: reader.size.height,
+                                             padding: self.verticalPadding,
+                                             nTicks: self.nYTicks,
+                                             tick: tick))
+            }
+          }
+          
+          // Draw x-axis tick marks
+          ForEach(0..<self.nXTicks) { tick in
+            Group {
+              Path { p in
+                let xPos = self.tickPos(dimension: reader.size.width,
+                                        padding: self.horizontalPadding,
+                                        nTicks: self.nXTicks,
+                                        tick: tick)
+                let tickStart = CGPoint(
+                  x: xPos,
+                  y: reader.size.height - self.verticalPadding / 2.0 +
+                    self.verticalPadding / 4.0)
+                let tickStop = CGPoint(
+                  x: xPos,
+                  y: reader.size.height - self.verticalPadding / 2.0)
+                p.move(to: tickStart)
+                p.addLine(to: tickStop)
+              }
+              .stroke(Color.black, lineWidth: 5.0)
+            }
+          }
+          
+          // Draw the scores
+          ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
+            Path { p in
+              let dWidth = self.dayWidth(
+                reader.size.width - self.horizontalPadding,
+                count: self.keys.count + 1)
+              let sHeight = self.scoreHeight(
+                reader.size.height - self.verticalPadding, range: self.highScore)
+              let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
+              let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
+              let scoreStart = self.scorePosition(
+                self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
+              let scoreStop = self.scorePosition(
+                self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
+              let startPoint = CGPoint(
+                x: dStart,
+                y: reader.size.height - self.verticalPadding / 2.0 - scoreStart)
+              let endPoint = CGPoint(
+                x: dStop,
+                y: reader.size.height - self.verticalPadding / 2.0 - scoreStop)
+              p.move(to: startPoint)
+              p.addLine(to: endPoint)
+            }
+            .stroke()
+          }
+          
         }
-      }
-      
-      // Draw the scores
-      ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
-        Path { p in
-          let dWidth = self.dayWidth(
-            reader.size.width - self.horizontalPadding,
-            count: self.keys.count + 1)
-          let sHeight = self.scoreHeight(
-            reader.size.height - self.verticalPadding, range: self.highScore)
-          let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
-          let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
-          let scoreStart = self.scorePosition(
-            self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
-          let scoreStop = self.scorePosition(
-            self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
-          let startPoint = CGPoint(
-            x: dStart,
-            y: reader.size.height - self.verticalPadding / 2.0 - scoreStart)
-          let endPoint = CGPoint(
-            x: dStop,
-            y: reader.size.height - self.verticalPadding / 2.0 - scoreStop)
-          p.move(to: startPoint)
-          p.addLine(to: endPoint)
-        }
-        .stroke()
-      }
-
+      )
     }
   }
 }
