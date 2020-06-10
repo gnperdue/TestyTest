@@ -8,8 +8,15 @@
 
 import SwiftUI
 
-
 struct ContentView: View {
+  var body: some View {
+//    DirectChartView()
+    ScoresChartView()
+  }
+}
+
+
+struct DirectChartView: View {
   let keys = ExampleGameData().scoreDict.keys.sorted()
   let scoreDict = ExampleGameData().scoreDict
   let highScore = 50
