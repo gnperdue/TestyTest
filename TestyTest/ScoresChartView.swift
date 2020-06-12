@@ -15,9 +15,10 @@ struct ScoresChartView: View {
   let maxScoreDigits = 3
   let nYTicks = 10
   let nXTicks = 10  // TODO - distribute dates...
+  let lineWidth: CGFloat = 5.0
 
   var body: some View {
-    Group {
+    ZStack {
       GeometryReader(content: drawXYAxis(with:))
       GeometryReader(content: drawYAxisTicks(with:))
     }
@@ -88,26 +89,28 @@ struct ScoresChartView: View {
         Path { p in
           let yPos = self.tickPos(
             dimension: reader.size.height,
-            padding: self.verticalPaddingFraction * reader.size.height,
+            padding: self.verticalPaddingFraction * 2 * reader.size.height,
             nTicks: self.nYTicks,
             tick: tick)
           let tickStart = CGPoint(
-            x: self.horizontalPaddingFraction * reader.size.width / 2.0 - self.horizontalPaddingFraction * reader.size.width / 4.0,
+            x: self.horizontalPaddingFraction * reader.size.width / 2.0,
             y: yPos)
           let tickStop = CGPoint(
-            x: self.horizontalPaddingFraction * reader.size.width / 2.0,
+            x: self.horizontalPaddingFraction * reader.size.width,
             y: yPos)
           p.move(to: tickStart)
           p.addLine(to: tickStop)
         }
         .stroke(Color.black, lineWidth: 5.0)
         Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
-          .offset(x: self.horizontalPaddingFraction * reader.size.width,
-                  y: self.tickLabelPos(
-                    dimension: reader.size.height,
-                    padding: self.verticalPaddingFraction * reader.size.height,
-                    nTicks: self.nYTicks,
-                    tick: tick))
+          .offset(
+            x: self.horizontalPaddingFraction * reader.size.width / 2.0 -
+              self.lineWidth * 1.5,
+            y: self.tickPos(
+              dimension: reader.size.height,
+              padding: self.verticalPaddingFraction * 2 * reader.size.height,
+              nTicks: self.nYTicks,
+              tick: tick) - self.lineWidth * 4.25)
       }
     }
 
