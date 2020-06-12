@@ -15,7 +15,7 @@ struct ScoresChartView: View {
   let maxScoreDigits = 3
   let nYTicks = 10
   let nXTicks = 10  // TODO - distribute dates...
-  let lineWidth: CGFloat = 5.0
+  let tickWidth: CGFloat = 5.0
 
   var body: some View {
     ZStack {
@@ -93,7 +93,7 @@ struct ScoresChartView: View {
             nTicks: self.nYTicks,
             tick: tick)
           let tickStart = CGPoint(
-            x: self.horizontalPaddingFraction * reader.size.width / 2.0,
+            x: self.horizontalPaddingFraction * reader.size.width / 4.0,
             y: yPos)
           let tickStop = CGPoint(
             x: self.horizontalPaddingFraction * reader.size.width,
@@ -101,16 +101,15 @@ struct ScoresChartView: View {
           p.move(to: tickStart)
           p.addLine(to: tickStop)
         }
-        .stroke(Color.black, lineWidth: 5.0)
+        .stroke(Color.black, lineWidth: self.tickWidth)
         Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
           .offset(
-            x: self.horizontalPaddingFraction * reader.size.width / 2.0 -
-              self.lineWidth * 1.5,
+            x: self.tickWidth / 4.0,
             y: self.tickPos(
               dimension: reader.size.height,
               padding: self.verticalPaddingFraction * 2 * reader.size.height,
               nTicks: self.nYTicks,
-              tick: tick) - self.lineWidth * 4.25)
+              tick: tick) + self.tickWidth / 2.0)
       }
     }
 
