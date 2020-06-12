@@ -52,17 +52,6 @@ struct ScoresChartView: View {
     return pos
   }
 
-  // try to make this work for x and y-axes
-  func tickLabelPos(
-    dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
-  ) -> CGFloat {
-    let verticalSpan = dimension - padding
-    let tickStep = verticalSpan / CGFloat(nTicks)
-    let pos = dimension - padding / 2.0 - CGFloat(tick) * tickStep -
-      tickStep / 3.5
-    return pos
-  }
-  
   func tickLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
     let marker: Double = Double(highScore) -
       Double(nTicks - tick) * Double(highScore) / Double(nTicks)
