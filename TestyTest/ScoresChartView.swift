@@ -27,18 +27,23 @@ struct ScoresChartView: View {
     let bottomLeading = bottomLeadingCorner(with: reader)
     let bottomTrailing = bottomTrailingCorner(with: reader)
     let topLeading = topLeadingCorner(with: reader)
+    let topTrailing = topTrailingCorner(with: reader)
 
     return Group {
       Path { p in
+        p.addLines([topLeading, topTrailing, bottomTrailing])
+      }
+      .stroke(Color.gray, lineWidth: 5.0)
+      Path { p in
         p.addLines([topLeading, bottomLeading, bottomTrailing])
       }
-      .stroke(Color.black, lineWidth: 5.0)
-      
+      .stroke(Color.black, style: StrokeStyle(lineWidth: 5.0, lineCap: .square))
+
       // y-axis ticks and labels
       drawYAxisTicksAndLabels(with: reader)
       
       // x-axis ticks and labels
-
+      drawXAxisTicksAndLabels(with: reader)
     }
   }
 
@@ -76,7 +81,7 @@ struct ScoresChartView: View {
     return pos
   }
 
-  func tickLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
+  func tickYLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
     let marker: Double = Double(highScore) -
       Double(nTicks - tick) * Double(highScore) / Double(nTicks)
     let label = String(format: "%.0f", marker)
@@ -104,7 +109,7 @@ struct ScoresChartView: View {
           p.addLine(to: tickStop)
         }
         .stroke(Color.black, lineWidth: self.tickWidth)
-        Text("\(self.tickLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
+        Text("\(self.tickYLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
           .offset(
             x: self.tickWidth / 4.0,
             y: self.tickPos(
@@ -116,6 +121,31 @@ struct ScoresChartView: View {
     }
   }
 
+  // TODO - write out plan for handling dates...
+  func drawXAxisTicksAndLabels(with reader: GeometryProxy) -> some View {
+    ForEach(0..<self.nXTicks) { tick in
+      Group {
+        Path { p in
+          let xPos = self.tickPos(
+            dimension: reader.size.width,
+            padding: self.horizontalPaddingFraction * 2,
+            nTicks: self.nXTicks,
+            tick: tick)
+          let tickStart = CGPoint(
+            x: xPos,
+            y: reader.size.height -
+              self.verticalPaddingFraction * reader.size.height / 4.0)
+          let tickStop = CGPoint(
+            x: xPos,
+            y: reader.size.height -
+              self.verticalPaddingFraction * reader.size.height)
+          p.move(to: tickStart)
+          p.addLine(to: tickStop)
+        }
+        .stroke(Color.black, lineWidth: self.tickWidth)
+      }
+    }
+  }
 }
 
 
