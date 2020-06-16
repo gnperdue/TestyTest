@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct ScoresChartView: View {
+  let keys = ExampleGameData().scoreDict.keys.sorted()
+  let scoreDict = ExampleGameData().scoreDict
   let verticalPaddingFraction: CGFloat = 0.05
   let horizontalPaddingFraction: CGFloat = 0.05
   let highScore = 50
@@ -16,6 +18,7 @@ struct ScoresChartView: View {
   let nYTicks = 10
   let nXTicks = 10  // TODO - distribute dates...
   let tickWidth: CGFloat = 5.0
+  let chartLineWidth: CGFloat = 6.0
 
   var body: some View {
     ZStack {
@@ -30,6 +33,8 @@ struct ScoresChartView: View {
     let topTrailing = topTrailingCorner(with: reader)
 
     return Group {
+      
+      // major axis lines and outer frame
       Path { p in
         p.addLines([topLeading, topTrailing, bottomTrailing])
       }
@@ -37,13 +42,46 @@ struct ScoresChartView: View {
       Path { p in
         p.addLines([topLeading, bottomLeading, bottomTrailing])
       }
-      .stroke(Color.black, style: StrokeStyle(lineWidth: 5.0, lineCap: .square))
+      .stroke(
+        Color.black, style: StrokeStyle(lineWidth: 5.0, lineCap: .square))
 
       // y-axis ticks and labels
       drawYAxisTicksAndLabels(with: reader)
       
       // x-axis ticks and labels
       drawXAxisTicksAndLabels(with: reader)
+      
+      // Draw the scores
+      ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
+        Path { p in
+          let dWidth = self.dayWidth(
+            reader.size.width * (1 - self.horizontalPaddingFraction * 2),
+            count: self.keys.count + 1)
+          let sHeight = self.scoreHeight(
+            reader.size.height * (1 - self.verticalPaddingFraction * 2),
+            range: self.highScore)
+          let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
+          let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
+          let scoreStart = self.scorePosition(
+            self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
+          let scoreStop = self.scorePosition(
+            self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
+          let startPoint = CGPoint(
+            x: dStart,
+            y: reader.size.height * (1 - self.verticalPaddingFraction)
+              - scoreStart)
+          let endPoint = CGPoint(
+            x: dStop,
+            y: reader.size.height * (1 - self.verticalPaddingFraction)
+              - scoreStop)
+          p.move(to: startPoint)
+          p.addLine(to: endPoint)
+        }
+        .stroke(
+          Color.blue,
+          style: StrokeStyle(lineWidth: self.chartLineWidth, lineCap: .round))
+      }
+
     }
   }
 
@@ -69,6 +107,25 @@ struct ScoresChartView: View {
     return CGPoint(
       x: reader.size.width * (1 - horizontalPaddingFraction),
       y: reader.size.height * verticalPaddingFraction)
+  }
+
+  // how much horizontal space does each "day" in the set of scores take?
+  // TODO -- adjust to actual date span instead of just list of days
+  func dayWidth(_ width: CGFloat, count: Int) -> CGFloat {
+    width / CGFloat(count)
+  }
+  
+  // how much of the open vertical space does each score take?
+  func scoreHeight(_ height: CGFloat, range: Int) -> CGFloat {
+    height / CGFloat(range)
+  }
+
+  func dayOffset(_ day: Int, dWidth: CGFloat) -> CGFloat {
+    CGFloat(day) * dWidth
+  }
+
+  func scorePosition(_ score: Double, scoreHeight: CGFloat) -> CGFloat {
+    CGFloat(score + 1) * scoreHeight
   }
 
   // try to make this work for x and y-axes
