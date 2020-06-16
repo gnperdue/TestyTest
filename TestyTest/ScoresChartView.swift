@@ -205,6 +205,20 @@ struct ScoresChartView: View {
   }
 }
 
+// How to deal with dates:
+/*
+ 1. First compute the total date range and create an interval.
+ 2. Pad the interval by 5% on each side.
+ 3. Map the new interval to the horizontal span allowed (reader.size.width -
+      2 * self.horizontalPaddingFraction)
+ 4. Distribute N date markers evenly across the interval - first need to compute
+      their values of course.
+ 5. Draw N ticks and label the x-axis.
+ 6. Compute the location of the score dates in the interval and map to the
+      allowed horizontal span.
+ 7. Draw the scores line.
+ */
+
 
 struct ScoresChartView_Previews: PreviewProvider {
   static var previews: some View {
