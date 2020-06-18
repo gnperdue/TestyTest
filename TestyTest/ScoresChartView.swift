@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct ScoresChartView: View {
-  let keys = ExampleGameData().scoreDict.keys.sorted()
-  let scoreDict = ExampleGameData().scoreDict
+  let games = ExampleGameData().games.sorted(
+    by: {(a, b) in return a.date < b.date})
   let verticalPaddingFraction: CGFloat = 0.05
   let horizontalPaddingFraction: CGFloat = 0.05
   let highScore = 50
@@ -32,6 +32,23 @@ struct ScoresChartView: View {
     let topLeading = topLeadingCorner(with: reader)
     let topTrailing = topTrailingCorner(with: reader)
 
+    let sortedGames = games.sorted(by: {(a, b) in return a.date < b.date})
+    var newIntervalStart: Date = Date()
+    var newIntervalStop: Date = Date()
+
+    if let firstGame = sortedGames.first {
+      if let lastGame = sortedGames.last {
+        print(firstGame.date, lastGame.date)
+        let delta = lastGame.date.timeIntervalSince(firstGame.date)
+        newIntervalStart = firstGame.date.addingTimeInterval(-delta * 0.05)
+        newIntervalStop = lastGame.date.addingTimeInterval(delta * 0.05)
+      }
+    }
+    print(newIntervalStart, newIntervalStop)
+    let newInterval =
+      CGFloat(newIntervalStop.timeIntervalSince(newIntervalStart))
+    print("New interval = \(newInterval)")
+
     return Group {
       
       // major axis lines and outer frame
@@ -52,28 +69,30 @@ struct ScoresChartView: View {
       drawXAxisTicksAndLabels(with: reader)
       
       // Draw the scores
-      ForEach(self.keys.indices[0..<self.keys.count-1]) { idx in
+      ForEach(self.games.indices[0..<self.games.count - 1]) { idx in
         Path { p in
-          let dWidth = self.dayWidth(
-            reader.size.width * (1 - self.horizontalPaddingFraction * 2),
-            count: self.keys.count + 1)
-          let sHeight = self.scoreHeight(
-            reader.size.height * (1 - self.verticalPaddingFraction * 2),
-            range: self.highScore)
-          let dStart = self.dayOffset(idx + 1, dWidth: dWidth)
-          let dStop = self.dayOffset(idx + 2, dWidth: dWidth)
-          let scoreStart = self.scorePosition(
-            self.scoreDict[self.keys[idx]]!, scoreHeight: sHeight)
-          let scoreStop = self.scorePosition(
-            self.scoreDict[self.keys[idx + 1]]!, scoreHeight: sHeight)
+          let score1Xpos =
+            CGFloat(
+              self.games[idx].date.timeIntervalSince(newIntervalStart)) *
+              (reader.size.width * (1 - 2 * self.horizontalPaddingFraction)) /
+              newInterval + reader.size.width * self.horizontalPaddingFraction
+          let score2Xpos =
+            CGFloat(
+              self.games[idx + 1].date.timeIntervalSince(newIntervalStart)) *
+              (reader.size.width * (1 - 2 * self.horizontalPaddingFraction)) /
+              newInterval + reader.size.width * self.horizontalPaddingFraction
+          let score1Ypos = self.scoreYPos(score: self.games[idx].score,
+                                          span: reader.size.height,
+                                          padding: self.verticalPaddingFraction)
+          let score2Ypos = self.scoreYPos(score: self.games[idx + 1].score,
+                                          span: reader.size.height,
+                                          padding: self.verticalPaddingFraction)
           let startPoint = CGPoint(
-            x: dStart,
-            y: reader.size.height * (1 - self.verticalPaddingFraction)
-              - scoreStart)
+            x: score1Xpos,
+            y: score1Ypos)
           let endPoint = CGPoint(
-            x: dStop,
-            y: reader.size.height * (1 - self.verticalPaddingFraction)
-              - scoreStop)
+            x: score2Xpos,
+            y: score2Ypos)
           p.move(to: startPoint)
           p.addLine(to: endPoint)
         }
@@ -109,23 +128,8 @@ struct ScoresChartView: View {
       y: reader.size.height * verticalPaddingFraction)
   }
 
-  // how much horizontal space does each "day" in the set of scores take?
-  // TODO -- adjust to actual date span instead of just list of days
-  func dayWidth(_ width: CGFloat, count: Int) -> CGFloat {
-    width / CGFloat(count)
-  }
-  
-  // how much of the open vertical space does each score take?
-  func scoreHeight(_ height: CGFloat, range: Int) -> CGFloat {
-    height / CGFloat(range)
-  }
-
-  func dayOffset(_ day: Int, dWidth: CGFloat) -> CGFloat {
-    CGFloat(day) * dWidth
-  }
-
-  func scorePosition(_ score: Double, scoreHeight: CGFloat) -> CGFloat {
-    CGFloat(score + 1) * scoreHeight
+  func scoreYPos(score: Double, span: CGFloat, padding: CGFloat) -> CGFloat {
+    return span - (CGFloat(score) * span * (1 - 2 * padding) / CGFloat(self.highScore) + span * padding)
   }
 
   // try to make this work for x and y-axes
