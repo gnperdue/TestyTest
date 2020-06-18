@@ -8,10 +8,36 @@
 
 import Foundation
 
-struct ExampleGameData {
-  let scoreDict: [String: Double] = [
-    "2020/05/01": 17.0, "2020/05/02": 16.1, "2020/05/04": 19.6,
-    "2020/05/10": 2.45, "2020/05/15": 35.5
-  ]
-  let highScore: Double = 35.5
+struct GameData {
+  let date: Date
+  let score: Double
+}
+
+class ExampleGameData {
+  let fmt: DateFormatter
+  init() {
+    fmt = DateFormatter()
+    fmt.dateFormat = "yyyy/MM/dd HH:mm"
+  }
+  
+  var games: [GameData] {
+    return [
+      GameData(date: self.fmt.date(from: "2020/05/01 09:30")!, score: 13.0),
+      GameData(date: self.fmt.date(from: "2020/05/10 14:45")!, score: 42.0),
+      GameData(date: self.fmt.date(from: "2020/05/03 12:20")!, score: 22.0),
+      GameData(date: self.fmt.date(from: "2020/05/03 13:20")!, score: 35.0),
+      GameData(date: self.fmt.date(from: "2020/05/01 08:30")!, score: 15.0),
+      GameData(date: self.fmt.date(from: "2020/05/03 11:20")!, score: 7.0),
+    ]
+  }
+  
+  var highScore: Double {
+    var highScore: Double = 0.0
+    for game in self.games {
+      if game.score > highScore {
+        highScore = game.score
+      }
+    }
+    return highScore
+  }
 }
