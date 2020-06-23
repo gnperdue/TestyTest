@@ -62,10 +62,11 @@ struct ScoresChartView: View {
         Color.black, style: StrokeStyle(lineWidth: 5.0, lineCap: .square))
 
       // y-axis ticks and labels
-      drawYAxisTicksAndLabels(with: reader)
+      drawYAxisTicksAndLabels(with: reader, highScore: self.highScore)
       
       // x-axis ticks and labels
-      drawXAxisTicksAndLabels(with: reader)
+      drawXAxisTicksAndLabels(
+        with: reader, start: newIntervalStart, stop: newIntervalStop)
       
       // Draw the scores
       ForEach(self.games.indices[0..<self.games.count - 1]) { idx in
@@ -81,9 +82,11 @@ struct ScoresChartView: View {
               (reader.size.width * (1 - 2 * self.horizontalPaddingFraction)) /
               newInterval + reader.size.width * self.horizontalPaddingFraction
           let score1Ypos = self.scoreYPos(score: self.games[idx].score,
+                                          highScore: CGFloat(self.highScore),
                                           span: reader.size.height,
                                           padding: self.verticalPaddingFraction)
           let score2Ypos = self.scoreYPos(score: self.games[idx + 1].score,
+                                          highScore: CGFloat(self.highScore),
                                           span: reader.size.height,
                                           padding: self.verticalPaddingFraction)
           let startPoint = CGPoint(
@@ -127,8 +130,12 @@ struct ScoresChartView: View {
       y: reader.size.height * verticalPaddingFraction)
   }
 
-  func scoreYPos(score: Double, span: CGFloat, padding: CGFloat) -> CGFloat {
-    return span - (CGFloat(score) * span * (1 - 2 * padding) / CGFloat(self.highScore) + span * padding)
+  func scoreYPos(score: Double,
+                 highScore: CGFloat,
+                 span: CGFloat,
+                 padding: CGFloat) -> CGFloat {
+    return span - (CGFloat(score) * span * (1 - 2 * padding) /
+      highScore + span * padding)
   }
 
   func tickPositions(distance: CGFloat,
@@ -144,15 +151,16 @@ struct ScoresChartView: View {
     return positions
   }
   
-  func drawYAxisTicksAndLabels(with reader: GeometryProxy) -> some View {
+  func drawYAxisTicksAndLabels(with reader: GeometryProxy,
+                               highScore: Int) -> some View {
     let positions = tickPositions(
       distance: reader.size.height,
       paddingFraction: self.verticalPaddingFraction,
       nTicks: self.nYTicks)
     let labelScores = Array(
       stride(from: 0,
-             through: self.highScore,
-             by: self.highScore / (self.nYTicks - 1)))
+             through: highScore,
+             by: highScore / (self.nYTicks - 1)))
 
     return ForEach(0..<self.nYTicks) { tick in
       Group {
@@ -176,11 +184,16 @@ struct ScoresChartView: View {
     }
   }
 
-  func drawXAxisTicksAndLabels(with reader: GeometryProxy) -> some View {
+  func drawXAxisTicksAndLabels(with reader: GeometryProxy,
+                               start: Date,
+                               stop: Date) -> some View {
     let positions = tickPositions(
       distance: reader.size.width,
       paddingFraction: self.horizontalPaddingFraction,
       nTicks: self.nXTicks)
+    // TODO NEXT -- take `start` and `stop` and compose the tick labels
+    // Probably skip the first one (not enough space to the left of the first
+    // label)...
 
     return ForEach(0..<self.nXTicks) { tick in
       Group {
