@@ -15,8 +15,8 @@ struct ScoresChartView: View {
   let horizontalPaddingFraction: CGFloat = 0.05
   let highScore = 50
   let maxScoreDigits = 3
-  let nYTicks = 10
-  let nXTicks = 10  // TODO - distribute dates...
+  let nYTicks = 11
+  let nXTicks = 8  // TODO - distribute dates...
   let tickWidth: CGFloat = 5.0
   let chartLineWidth: CGFloat = 6.0
 
@@ -38,7 +38,6 @@ struct ScoresChartView: View {
 
     if let firstGame = sortedGames.first {
       if let lastGame = sortedGames.last {
-        print(firstGame.date, lastGame.date)
         let delta = lastGame.date.timeIntervalSince(firstGame.date)
         newIntervalStart = firstGame.date.addingTimeInterval(-delta * 0.05)
         newIntervalStop = lastGame.date.addingTimeInterval(delta * 0.05)
@@ -132,34 +131,33 @@ struct ScoresChartView: View {
     return span - (CGFloat(score) * span * (1 - 2 * padding) / CGFloat(self.highScore) + span * padding)
   }
 
-  // try to make this work for x and y-axes
-  func tickPos(
-    dimension: CGFloat, padding: CGFloat, nTicks: Int, tick: Int
-  ) -> CGFloat {
-    let verticalSpan = dimension - padding
-    let tickStep = verticalSpan / CGFloat(nTicks)
-    let pos = dimension - padding / 2.0 - CGFloat(tick) * tickStep
-    return pos
+  func tickPositions(distance: CGFloat,
+                     paddingFraction: CGFloat,
+                     nTicks: Int) -> [CGFloat] {
+    let span = distance * (1 - 2 * paddingFraction)
+    var positions: [CGFloat] = []
+    for i in 0..<nTicks {
+      let pos = CGFloat(i) * span / ((CGFloat(nTicks) - 1)) +
+        distance * paddingFraction
+      positions.append(pos)
+    }
+    return positions
   }
-
-  func tickYLabel(highScore: Int, nTicks: Int, tick: Int) -> String {
-    let marker: Double = Double(highScore) -
-      Double(nTicks - tick) * Double(highScore) / Double(nTicks)
-    let label = String(format: "%.0f", marker)
-    // wherefore art thou, o' built-in String padding functions?...
-    return String(
-      repeating: " ", count: self.maxScoreDigits - label.count) + label
-  }
-
+  
   func drawYAxisTicksAndLabels(with reader: GeometryProxy) -> some View {
-    ForEach(0..<self.nYTicks) { tick in
+    let positions = tickPositions(
+      distance: reader.size.height,
+      paddingFraction: self.verticalPaddingFraction,
+      nTicks: self.nYTicks)
+    let labelScores = Array(
+      stride(from: 0,
+             through: self.highScore,
+             by: self.highScore / (self.nYTicks - 1)))
+
+    return ForEach(0..<self.nYTicks) { tick in
       Group {
         Path { p in
-          let yPos = self.tickPos(
-            dimension: reader.size.height,
-            padding: self.verticalPaddingFraction * 2 * reader.size.height,
-            nTicks: self.nYTicks,
-            tick: tick)
+          let yPos = positions[self.nYTicks - 1 - tick]
           let tickStart = CGPoint(
             x: self.horizontalPaddingFraction * reader.size.width / 4.0,
             y: yPos)
@@ -170,28 +168,24 @@ struct ScoresChartView: View {
           p.addLine(to: tickStop)
         }
         .stroke(Color.black, lineWidth: self.tickWidth)
-        Text("\(self.tickYLabel(highScore: self.highScore, nTicks: self.nYTicks, tick: tick))")
+        Text("\(labelScores[tick])")
           .offset(
             x: self.tickWidth / 4.0,
-            y: self.tickPos(
-              dimension: reader.size.height,
-              padding: self.verticalPaddingFraction * 2 * reader.size.height,
-              nTicks: self.nYTicks,
-              tick: tick) + self.tickWidth / 2.0)
+            y: positions[self.nYTicks - 1 - tick] + self.tickWidth / 2.0)
       }
     }
   }
 
-  // TODO - write out plan for handling dates...
   func drawXAxisTicksAndLabels(with reader: GeometryProxy) -> some View {
-    ForEach(0..<self.nXTicks) { tick in
+    let positions = tickPositions(
+      distance: reader.size.width,
+      paddingFraction: self.horizontalPaddingFraction,
+      nTicks: self.nXTicks)
+
+    return ForEach(0..<self.nXTicks) { tick in
       Group {
         Path { p in
-          let xPos = self.tickPos(
-            dimension: reader.size.width,
-            padding: self.horizontalPaddingFraction * 2,
-            nTicks: self.nXTicks,
-            tick: tick)
+          let xPos = positions[self.nXTicks - 1 - tick]
           let tickStart = CGPoint(
             x: xPos,
             y: reader.size.height -
