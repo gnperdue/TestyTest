@@ -66,7 +66,7 @@ struct ScoresChartView: View {
       
       // x-axis ticks and labels
       drawXAxisTicksAndLabels(
-        with: reader, start: newIntervalStart, stop: newIntervalStop)
+        with: reader, start: newIntervalStart, interval: newInterval)
       
       // Draw the scores
       ForEach(self.games.indices[0..<self.games.count - 1]) { idx in
@@ -186,14 +186,29 @@ struct ScoresChartView: View {
 
   func drawXAxisTicksAndLabels(with reader: GeometryProxy,
                                start: Date,
-                               stop: Date) -> some View {
+                               interval: CGFloat) -> some View {
     let positions = tickPositions(
       distance: reader.size.width,
       paddingFraction: self.horizontalPaddingFraction,
       nTicks: self.nXTicks)
-    // TODO NEXT -- take `start` and `stop` and compose the tick labels
-    // Probably skip the first one (not enough space to the left of the first
-    // label)...
+    // TODO NEXT -- add the tick labels to the chart. Probably skip the first
+    // one (not enough space to the left of the first label)...
+    var years = Set<Int>()
+    var labels: [Date] = []
+    for i in 0..<self.nXTicks {
+      let intervalLabel = start.addingTimeInterval((Double(i) /
+        Double(self.nXTicks)) * Double(interval))
+      let year = Calendar.current.dateComponents([.year], from: intervalLabel)
+      years.insert(year.year!)
+      labels.append(intervalLabel)
+    }
+    let dateFormatter = DateFormatter()
+    // TODO -- get a fancier formatter logic here -- if it is all in the same
+    // month we should also zoom in, same for same day
+    dateFormatter.dateFormat = years.count == 1 ? "MMM d" : "MMM d, y"
+    for label in labels {
+      print(dateFormatter.string(from: label))
+    }
 
     return ForEach(0..<self.nXTicks) { tick in
       Group {
