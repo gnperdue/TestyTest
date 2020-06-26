@@ -43,10 +43,8 @@ struct ScoresChartView: View {
         newIntervalStop = lastGame.date.addingTimeInterval(delta * 0.05)
       }
     }
-    print(newIntervalStart, newIntervalStop)
     let newInterval =
       CGFloat(newIntervalStop.timeIntervalSince(newIntervalStart))
-    print("New interval = \(newInterval)")
 
     return Group {
       
@@ -191,6 +189,8 @@ struct ScoresChartView: View {
       distance: reader.size.width,
       paddingFraction: self.horizontalPaddingFraction,
       nTicks: self.nXTicks)
+    let tickSpacing = (positions.last! - positions.first!) /
+      CGFloat(self.nXTicks)
     // TODO NEXT -- add the tick labels to the chart. Probably skip the first
     // one (not enough space to the left of the first label)...
     var years = Set<Int>()
@@ -202,6 +202,7 @@ struct ScoresChartView: View {
       years.insert(year.year!)
       labels.append(intervalLabel)
     }
+    labels = labels.reversed()
     let dateFormatter = DateFormatter()
     // TODO -- get a fancier formatter logic here -- if it is all in the same
     // month we should also zoom in, same for same day
@@ -226,6 +227,11 @@ struct ScoresChartView: View {
           p.addLine(to: tickStop)
         }
         .stroke(Color.black, lineWidth: self.tickWidth)
+        Text("\(dateFormatter.string(from: labels[tick]))")
+          .offset(
+            x: positions[self.nXTicks - 1 - tick] - tickSpacing / 4.0,
+            y: reader.size.height - self.tickWidth)
+
       }
     }
   }
