@@ -10,13 +10,38 @@ import SwiftUI
 
 
 struct ContentView: View {
+  @State var timerMinutes = 0
+  @State var timerSeconds = 10
+  
+  var minutes = [Int](0..<3)
+  var seconds = [Int](0..<60)
+  
   var body: some View {
-    NavigationView { // We have a Nav view up the hierarchy...
-      NavigationLink(destination: CountDownIntervalView()) {
-        Text("Start the countdown!")
+    // does NavigationView wrap Geometry Reader or vice versa?
+    GeometryReader { reader in
+      NavigationView { // We have a Nav view up the hierarchy...
+        VStack {
+          HStack {
+            Picker(selection: self.$timerMinutes, label: Text("")) {
+              ForEach(0..<self.minutes.count) { index in
+                Text("\(self.minutes[index]) m").tag(index)
+              }
+            }
+            .frame(width: reader.size.width / 2, alignment: .center)
+            Picker(selection: self.$timerSeconds, label: Text("")) {
+              ForEach(0..<self.seconds.count) { index in
+                Text("\(self.seconds[index]) s").tag(index)
+              }
+            }
+            .frame(width: reader.size.width / 2, alignment: .center)
+          }
+          NavigationLink(destination: CountDownIntervalView()) {
+            Text("Start the countdown!")
+          }
+        }
       }
+      .navigationViewStyle(StackNavigationViewStyle())
     }
-    .navigationViewStyle(StackNavigationViewStyle())
   }
 }
 
@@ -31,7 +56,6 @@ struct CountDownIntervalView: View {
   }
   @State var color: Int = 0
   let colors: [Color] = [.black, .red]
-
 
   func format(duration: TimeInterval) -> String {
     let formatter = DateComponentsFormatter()
